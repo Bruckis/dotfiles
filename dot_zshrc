@@ -1,6 +1,15 @@
 # ~/.zshrc - interactive shell. Shared by all machines (managed by chezmoi).
 # Machine-specific stuff and secrets go in ~/.zshrc.local (not in the repo).
 
+# Auto-start tmux in local GUI terminals: reattach to the first detached session,
+# otherwise start a new one. Skipped over SSH, in IDE terminals, inside tmux, and
+# when NOTMUX is set (e.g. `NOTMUX=1 alacritty`). Detaching closes the window.
+if [[ -z $TMUX && -z $NOTMUX && -o interactive && -n $WAYLAND_DISPLAY && -z $SSH_CONNECTION \
+      && -z $ZED_TERM && $TERM_PROGRAM != vscode ]] && (( $+commands[tmux] )); then
+  _s=$(tmux ls -F '#{session_attached} #{session_name}' 2>/dev/null | awk '$1==0{print $2; exit}')
+  if [[ -n $_s ]]; then exec tmux attach -t "$_s"; else exec tmux new-session; fi
+fi
+
 # History
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=50000
