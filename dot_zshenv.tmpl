@@ -1,0 +1,19 @@
+# ~/.zshenv - read by every zsh (also scripts). Keep it to environment variables.
+typeset -U path PATH
+path=("$HOME/.local/bin" $path)
+export PATH
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+export EDITOR=nvim
+export VISUAL=nvim
+export PAGER=less
+export LESSHISTFILE="$XDG_STATE_HOME/less_history"
+{{- if lookPath "Hyprland" }}
+
+# Hyprland (HyDE) machines only
+export HYPRLAND_CONFIG="$XDG_DATA_HOME/hypr/hyprland.conf"
+{{- end }}

@@ -1,0 +1,68 @@
+# ~/.zshrc - interactive shell. Shared by all machines (managed by chezmoi).
+# Machine-specific stuff and secrets go in ~/.zshrc.local (not in the repo).
+
+# History
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt extended_history share_history hist_ignore_all_dups hist_ignore_space hist_reduce_blanks
+
+# General
+setopt auto_cd interactive_comments no_beep
+bindkey -e                                  # emacs-style line editing (Ctrl+A/E etc.)
+
+# Completion
+mkdir -p "$XDG_CACHE_HOME/zsh"
+autoload -Uz compinit
+compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
+zstyle ':completion:*' menu select                         # arrow-key menu
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # case-insensitive
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/compcache"
+zstyle ':completion:*' use-cache on
+
+# Keys that terminals send differently (Home/End/Delete, Ctrl+arrows)
+bindkey '^[[H' beginning-of-line   '^[[1~' beginning-of-line   '^[OH' beginning-of-line
+bindkey '^[[F' end-of-line         '^[[4~' end-of-line         '^[OF' end-of-line
+bindkey '^[[3~' delete-char
+bindkey '^[[1;5C' forward-word     '^[[1;5D' backward-word
+bindkey '^H' backward-kill-word                            # Ctrl+Backspace
+
+# Plugins (from pacman, plus the vendored sudo plugin). Missing ones are skipped.
+_src() { [[ -r $1 ]] && source "$1" }
+P=/usr/share/zsh/plugins
+_src "$P/zsh-autosuggestions/zsh-autosuggestions.zsh"            # grey suggestion, accept with →
+_src "$XDG_DATA_HOME/zsh/plugins/sudo.plugin.zsh" && bindkey '^[s' sudo-command-line                                       # Alt+S (Esc Esc also works)
+command -v fzf >/dev/null && source <(fzf --zsh)                      # Ctrl+R history, Ctrl+T files, Alt+C cd
+_src /usr/share/doc/pkgfile/command-not-found.zsh
+_src "$P/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"        # must come after other widgets
+if _src "$P/zsh-history-substring-search/zsh-history-substring-search.zsh"; then
+  bindkey '^[[A' history-substring-search-up   '^[OA' history-substring-search-up
+  bindkey '^[[B' history-substring-search-down '^[OB' history-substring-search-down
+fi
+unset P; unfunction _src
+
+# Aliases
+if command -v eza >/dev/null; then
+  alias ls='eza --icons=auto --group-directories-first'
+  alias ll='ls -l --git'
+  alias la='ls -la --git'
+  alias lt='ls --tree --level=2'
+else
+  alias ll='ls -lh --color=auto'
+  alias la='ls -lAh --color=auto'
+fi
+alias c='clear'
+alias sz='source ~/.zshrc'
+alias please='sudo'
+alias update='sudo pacman -Syu'
+alias fixpacman='sudo rm /var/lib/pacman/db.lck'
+alias jctl='journalctl -p 3 -xb'                                       # errors this boot
+alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"   # recently installed
+cleanup() { local o=(${(f)"$(pacman -Qtdq)"}); (( $#o )) && sudo pacman -Rsn $o || echo "No orphans."; }
+
+# Prompt
+command -v starship >/dev/null && eval "$(starship init zsh)"
+
+# Local overrides
+[[ -r ~/.zshrc.local ]] && source ~/.zshrc.local

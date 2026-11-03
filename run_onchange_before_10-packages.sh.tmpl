@@ -1,0 +1,16 @@
+#!/bin/sh
+# chezmoi re-runs this whenever the file content changes.
+set -eu
+# Shared: shell, terminal tools, editor
+sudo pacman -S --needed --noconfirm \
+  zsh starship fzf zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search zsh-completions \
+  pkgfile expac eza bat fd ripgrep neovim lazygit git-delta \
+  tmux wl-clipboard git openssh rsync micro btop fastfetch \
+  ttf-jetbrains-mono-nerd
+{{- if eq .chezmoi.hostname "desktop" }}
+# Desktop (KDE) only
+sudo pacman -S --needed --noconfirm alacritty openscad meld wireshark-qt localsend glances
+yay -S --needed --noconfirm orca-slicer-bin discord-canary spotify waterfox-bin
+{{- end }}
+# Default shell
+[ "$(getent passwd "$USER" | cut -d: -f7)" = /usr/bin/zsh ] || chsh -s /usr/bin/zsh

@@ -1,0 +1,4 @@
+# Files in the repo that are not placed in $HOME
+README.md
+install.sh
+laptop-switch/
