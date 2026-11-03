@@ -12,5 +12,9 @@ sudo pacman -S --needed --noconfirm \
 sudo pacman -S --needed --noconfirm alacritty openscad meld wireshark-qt localsend glances
 yay -S --needed --noconfirm orca-slicer-bin discord-canary spotify waterfox-bin
 {{- end }}
-# Default shell
-[ "$(getent passwd "$USER" | cut -d: -f7)" = /usr/bin/zsh ] || chsh -s /usr/bin/zsh
+# Default shell (any path ending in /zsh counts; /bin is /usr/bin on Arch).
+# sudo is already authenticated here, so this avoids chsh's own PAM prompt.
+case "$(getent passwd "$USER" | cut -d: -f7)" in
+  */zsh) ;;
+  *) sudo chsh -s /usr/bin/zsh "$USER" ;;
+esac
